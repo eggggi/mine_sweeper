@@ -40,6 +40,6 @@
 （十分渴望优化建议 orz ）
 
 ## 感谢
-十分感谢hoshino bot的创造者和各位做bot开发的老前辈们
-[HoshinoBot](https://github.com/Ice-Cirno/HoshinoBot)
+十分感谢hoshino bot的创造者和各位做bot开发的老前辈们<br>
+[HoshinoBot](https://github.com/Ice-Cirno/HoshinoBot)<br>
 [HoshinoBot 作品索引](https://github.com/pcrbot/HoshinoBot-plugins-index)
