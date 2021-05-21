@@ -299,6 +299,7 @@ async def mine_sweeper(bot, ev):
 		time_min = DEGREE_HARD_TIME
 		degree_text = degree
 	elif not degree :
+		if len(match.string) > 2 : return
 		pass
 	else:
 		if match.group(4) : grid_x = int(match.group(4))
