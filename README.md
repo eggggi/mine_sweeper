@@ -3,7 +3,7 @@
 目前有两个版本，一个是贵族版 mine_sweeper_duel ，一个普通版 mine_sweeper <br>
 有3个默认难度：简单、普通、困难<br>
 扫雷游戏所有群员都可参与(不要捣乱哦)<br>
-通关默认难度，所有参与者都可获得贵族金币
+贵族版通关默认难度，所有参与者都可获得贵族金币
 ## 安装
 栞栞自己的bot有没有安装贵族游戏，选择对应版本直接丢到hoshino里的moudle里，然后在__bot__.py里的MODULES_ON加上"mine_sweeper"即可（不管哪个版本都是"mine_sweeper"）。
 **不要两个版本都丢进去啊kora**
