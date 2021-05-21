@@ -32,9 +32,14 @@
 	标记第2列第3行的格子可能有地雷<br>
 	再次发送则取消
 4. #### 结束扫雷/扫雷结束<br>
-	强制结束游戏，只有管理员可以使用'''
+	强制结束游戏，只有管理员可以使用
 
 ## 其它
 其它更多请看代码~(￣▽￣)~*<br>
 （才不会告诉你我代码写得超烂的）<br>
 （十分渴望优化建议 orz ）
+
+## 感谢
+十分感谢hoshino bot的创造者和各位做bot开发的老前辈们
+[HoshinoBot](https://github.com/Ice-Cirno/HoshinoBot)
+[HoshinoBot 作品索引](https://github.com/pcrbot/HoshinoBot-plugins-index)
