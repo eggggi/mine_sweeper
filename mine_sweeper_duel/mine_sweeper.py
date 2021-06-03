@@ -152,7 +152,7 @@ class MineSweeper:
 
 	#检查坐标合法性
 	def checkCoor(self, grid_x, grid_y):
-		if (grid_x < 0 or grid_y < 0 
+		if (grid_x <= 0 or grid_y <= 0 
 			or grid_x > self.vertical_range_x 
 			or grid_y > self.across_range_y):
 			return False
@@ -376,7 +376,7 @@ async def mine_sweeper(bot, ev):
 		await bot.send(ev, "\n".join(msg))
 
 
-@sv.on_rex(r'^(\d+)(,|，|.)(\d+)')
+@sv.on_rex(r'^(\d+)(,|，|\.| |-)(\d+)$')
 async def click_grid(bot, ev: CQEvent):
 	match = ev['match']
 	if not match :
