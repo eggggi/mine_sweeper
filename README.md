@@ -5,8 +5,9 @@
 扫雷游戏所有群员都可参与(不要捣乱哦)<br>
 贵族版通关默认难度，所有参与者都可获得贵族金币
 ## 安装
-栞栞自己的bot有没有安装贵族游戏，选择对应版本直接丢到hoshino里的moudle里，然后在__bot__.py里的MODULES_ON加上"mine_sweeper"即可（不管哪个版本都是"mine_sweeper"）。
-**不要两个版本都丢进去啊kora**
+栞栞自己的bot有没有安装贵族游戏，选择对应版本直接丢到hoshino里的moudle里，然后在__bot__.py里的MODULES_ON加上"mine_sweeper"即可（不管哪个版本都是"mine_sweeper"）。<br>
+**不要两个版本都丢进去啊kora**<br><br>
+关于贵族版的问题，需要加上贵族决斗作者魔改的猜头像附带的daylimiter，详情请看[这里](https://github.com/Rs794613/PcrDuel/releases)的Games.add.gold.zip
 
 ## 指令表
 ### 游戏开启：
