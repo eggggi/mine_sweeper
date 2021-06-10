@@ -2,7 +2,7 @@ import os
 import sqlite3
 from hoshino.modules.priconne import daylimiter
 
-COUNT_PATH = os.path.expanduser("~/.hoshino/pcr_cardguess.db")
+COUNT_PATH = os.path.expanduser("~/.hoshino/pcr_minesweeper.db")
 SCORE_DB_PATH = os.path.expanduser('~/.hoshino/pcr_running_counter.db')
 MAX_GUESS_NUM = 3#每日最多获得金币次数
 INIT_TIME = 0 #每日重置时间
@@ -12,7 +12,7 @@ NORMAL_GOLD = 600
 HARD_GOLD = 900
 
 db = daylimiter.RecordDAO(COUNT_PATH)
-daily_card_limiter = daylimiter.DailyAmountLimiter("cardguess", MAX_GUESS_NUM, INIT_TIME, db)
+daily_card_limiter = daylimiter.DailyAmountLimiter("minesweeper", MAX_GUESS_NUM, INIT_TIME, db)
 
 class ScoreCounter:
     def __init__(self):

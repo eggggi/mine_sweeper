@@ -408,7 +408,7 @@ async def game_finish(bot, ev: CQEvent):
 	await bot.send(ev, f"您已强制结束扫雷，请等待结算")
 
 @sv.on_fullmatch(("查看雷区"))
-async def game_finish(bot, ev: CQEvent):
+async def check_mine(bot, ev: CQEvent):
 	if not priv.check_priv(ev, priv.SUPERUSER):
 		await bot.finish(ev, '只有机器人管理者才能查看雷区', at_sender=True)
 	ms = mgr.get_game(ev.group_id)
@@ -420,7 +420,7 @@ async def game_finish(bot, ev: CQEvent):
 	await bot.send(ev, msg)
 
 @sv.on_fullmatch(("扫雷帮助"))
-async def game_finish(bot, ev: CQEvent):
+async def game_help(bot, ev: CQEvent):
 	msg = '''	《扫雷帮助》
 ~~目前有3个默认难度：简单、普通、困难~~
 ~~扫雷游戏所有群员都可参与(不要捣乱哦)~~
