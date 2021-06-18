@@ -16,6 +16,7 @@ IMAGE_PATH = R.img('mine_sweeper').path
 if not os.path.exists(IMAGE_PATH):
 	os.mkdir(IMAGE_PATH)
 	logger.info('create folder succeed')
+IMAGE_PATH = 'mine_sweeper'
 
 ###显示###
 NOTCLICK = 0		#未点击
@@ -315,29 +316,29 @@ async def mine_sweeper(bot, ev):
 		await bot.send(ev, '超过最大值', at_sender=True)
 		return
 
-	image_path = R.img(f'{IMAGE_PATH}/{ev.group_id}.jpg').path
-	if os.path.exists(image_path):
-		os.remove(image_path)
+	image = R.img(f'{IMAGE_PATH}/{ev.group_id}.png')
+	if os.path.exists(image.path):
+		os.remove(image.path)
 
 	with mgr.start(ev.group_id, grid_x, grid_y, mine_num) as ms:
 		img = ms.getImage()
-		img.save(image_path)
+		img.save(image.path)
 		await bot.send(ev, f"扫雷游戏即将开始，当前难度为“{degree_text}”，雷区大小为{grid_x}x{grid_y}，共有{mine_num}个地雷，游戏持续{time_min}分钟")
 		await asyncio.sleep(WAIT_TIME)
-		await bot.send(ev, R.img(image_path).cqcode)
+		await bot.send(ev, image.cqcode)
 		for i in range(math.floor(time_min * 60 / WAIT_TIME)):
 			await asyncio.sleep(WAIT_TIME)
 			if ms.end_flag != NORMAL:
 				break
 		img = ms.getMineImage()
-		img.save(image_path)
+		img.save(image.path)
 		msg = []
 		if ms.end_flag == LOSE :
-			msg.append(f"很可惜，您踩到了地雷，游戏结束。\n最终结果：\n{R.img(image_path).cqcode}")
+			msg.append(f"很可惜，您踩到了地雷，游戏结束。\n最终结果：\n{image.cqcode}")
 		elif ms.end_flag == WIN:
-			msg.append(f"恭喜，你已成功找出所有地雷！\n最终结果：\n{R.img(image_path).cqcode}")
+			msg.append(f"恭喜，你已成功找出所有地雷！\n最终结果：\n{image.cqcode}")
 		else:
-			msg.append(f"很可惜，您没有在规定时间内扫雷成功，游戏结束。\n最终结果：\n{R.img(image_path).cqcode}")
+			msg.append(f"很可惜，您没有在规定时间内扫雷成功，游戏结束。\n最终结果：\n{image.cqcode}")
 		await bot.send(ev, "\n".join(msg))
 
 
@@ -357,15 +358,15 @@ async def click_grid(bot, ev: CQEvent):
 		await bot.send(ev, '坐标错误', at_sender=True)
 		return
 	
-	image_path = R.img(f'{IMAGE_PATH}/{gid}.jpg').path
+	image = R.img(f'{IMAGE_PATH}/{gid}.png')
 	
 	ret = ms.judgeClick(grid_x - 1, grid_y - 1)
 	img = ms.getImage()
-	img.save(image_path)
+	img.save(image.path)
 	if ret == WIN or ret == LOSE :
-		await bot.send(ev, f"游戏结束，请等待结算\n{R.img(image_path).cqcode}")
+		await bot.send(ev, f"游戏结束，请等待结算\n{image.cqcode}")
 	elif ret == NORMAL :
-		await bot.send(ev, R.img(image_path).cqcode)
+		await bot.send(ev, image.cqcode)
 
 @sv.on_rex(r'^(可能|未知|？|\?|标记|！|!)(\d+)(,|，|.)(\d+)')
 async def click_flag(bot, ev: CQEvent):
@@ -384,7 +385,7 @@ async def click_flag(bot, ev: CQEvent):
 		await bot.send(ev, '坐标错误', at_sender=True)
 		return
 	
-	image_path = R.img(f'{IMAGE_PATH}/{gid}.jpg').path
+	image = R.img(f'{IMAGE_PATH}/{gid}.png')
 	
 	ret = False
 	if operation == "可能" or operation == "未知" or operation == "？" or operation == "?":
@@ -393,8 +394,8 @@ async def click_flag(bot, ev: CQEvent):
 		ret = ms.setFlag(grid_x - 1, grid_y - 1)
 	if not ret : return
 	img = ms.getImage()
-	img.save(image_path)
-	await bot.send(ev, R.img(image_path).cqcode)
+	img.save(image.path)
+	await bot.send(ev, image.cqcode)
 
 
 @sv.on_fullmatch(("扫雷结束","结束扫雷"))
