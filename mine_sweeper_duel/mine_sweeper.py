@@ -12,7 +12,13 @@ from .get_gold import (ScoreCounter, daily_card_limiter,
 
 FILE_PATH = os.path.dirname(__file__)
 
-sv = Service('mine_sweeper', manage_priv=priv.SUPERUSER, enable_on_default=True, visible=False)
+sv = Service(	'mine_sweeper',
+				manage_priv=priv.ADMIN,
+				enable_on_default=True,
+				visible=True,
+				bundle='pcr娱乐',
+				help_='[扫雷] 扫雷')
+
 logger = log.new_logger('mine_sweeper')
 
 IMAGE_PATH = R.img('mine_sweeper').path
@@ -22,7 +28,7 @@ if not os.path.exists(IMAGE_PATH):
 IMAGE_PATH = 'mine_sweeper'
 
 ###显示###
-NOTCLICK = 0		#未点击
+NOT_CLICK = 0		#未点击
 ALREADY_CLICK = -1	#已点击，且附近无雷
 FLAG = -2			#标记
 MAYBE = -3			#可能
@@ -53,10 +59,10 @@ class MineSweeper:
 	#初始化
 	def __init__(self, gid, manager, vertical_range_x, across_range_y, mine_num, grid_size = 30) -> None:
 		self.gid = gid
-		self.mgr = manager
+		self.mgr:Manager = manager
 		self.end_flag = NORMAL		#结束标记
 		self.first_click = False	#是否是第一次点击
-		self.mine_corr = []			#保存有雷的坐标
+		self.mine_coor = []			#保存有雷的坐标
 		self.win_condition = 0		#胜利条件，用来保存已打开的格子数量，总格子数量 - 已打开格子数量 == 地雷数量 
 		self.participant = []		#参与者
 
@@ -64,12 +70,13 @@ class MineSweeper:
 		self.vertical_range_x = vertical_range_x
 		self.across_range_y = across_range_y
 		self.mine_num = mine_num	#地雷数量
+		self.flag_num = 0			#标记的地雷数量
 
 		width = (self.vertical_range_x + 2) * self.grid_size
 		hight = (self.across_range_y + 2) * self.grid_size
 
 		#雷区显示 0为未点击，-1为已点击，-2为标记，其它数字为附近有多少个雷
-		self.mine_field_display = [[NOTCLICK for i in range(self.across_range_y)] for j in range(self.vertical_range_x)]
+		self.mine_field_display = [[NOT_CLICK for i in range(self.across_range_y)] for j in range(self.vertical_range_x)]
 		#雷区判定 0为无雷，1为有雷
 		self.mine_field_judge = [[NOT_MINE for i in range(self.across_range_y)] for j in range(self.vertical_range_x)]
 
@@ -87,6 +94,7 @@ class MineSweeper:
 		return self
 	def __exit__(self, type_, value, trace):
 		del self.mgr.playing[self.gid]
+		self.mgr = None
 
 
 	#雷区判定初始化，随机在格子内放进地雷
@@ -98,11 +106,32 @@ class MineSweeper:
 			x = math.floor(mine / self.across_range_y)
 			y = mine % self.across_range_y
 			self.mine_field_judge[x][y] = HAVE_MINE
-			self.mine_corr.append( (x, y) )
+			self.mine_coor.append( (x, y) )
 
 	#雷区点击判定
 	def judgeClick(self, click_x, click_y, uid):
-		if self.mine_field_display[click_x][click_y] != NOTCLICK:
+		if self.mine_field_display[click_x][click_y] > NOT_CLICK:
+		#如果点击的是已开启的数字格子，且附近标记的格子数量和显示的数字相同，则自动打开附近的格子
+			not_click_box =[]
+			flag_num = 0
+			for i in range(3):
+				for j in range(3):
+					scan_x = click_x-1+i
+					scan_y = click_y-1+j
+					if ( scan_x < 0 or scan_y < 0 or scan_x >= self.vertical_range_x or scan_y >= self.across_range_y
+						or (i == 1 and j == 1) ):
+						continue
+					if self.mine_field_display[scan_x][scan_y] == NOT_CLICK:
+						not_click_box.append((scan_x, scan_y))
+					if self.mine_field_display[scan_x][scan_y] == FLAG:
+						flag_num += 1
+			if flag_num == self.mine_field_display[click_x][click_y]:
+				for coor in not_click_box:
+					if self.mine_field_display[coor[0]][coor[1]] != NOT_CLICK:continue
+					flag = self.judgeClick(coor[0], coor[1], uid)	#递归开启
+					if flag != NORMAL: return flag
+			return NORMAL
+		if self.mine_field_display[click_x][click_y] != NOT_CLICK:
 			return
 		if not self.first_click :#点击第一下一定不会爆炸
 			self.judgeInit(click_x * self.across_range_y + click_y)
@@ -134,7 +163,7 @@ class MineSweeper:
 				self.mine_field_display[click_x][click_y] = ALREADY_CLICK
 				self.fillGrid(click_x, click_y, COLOR_WRITE)
 				for coor in null_grid_coor :
-					if self.mine_field_display[coor[0]][coor[1]] == NOTCLICK :
+					if self.mine_field_display[coor[0]][coor[1]] == NOT_CLICK :
 						self.judgeClick(coor[0], coor[1], uid)		#递归消除
 			else:
 				show_num = ""
@@ -161,23 +190,25 @@ class MineSweeper:
 
 	#设置有雷标记
 	def setFlag(self, grid_x, grid_y):
-		if self.mine_field_display[grid_x][grid_y] == NOTCLICK:
+		if self.mine_field_display[grid_x][grid_y] == NOT_CLICK:
 			self.mine_field_display[grid_x][grid_y] = FLAG
 			self.fillGrid(grid_x, grid_y, COLOR_DEFAULT, textColor = COLOR_RED, text = '！')
+			self.flag_num += 1
 			return True
 		elif self.mine_field_display[grid_x][grid_y] == FLAG:
-			self.mine_field_display[grid_x][grid_y] = NOTCLICK
+			self.mine_field_display[grid_x][grid_y] = NOT_CLICK
 			self.fillGrid(grid_x, grid_y, COLOR_DEFAULT)
+			self.flag_num -= 1
 			return True
 		return False
 	#设置可能有雷标记
 	def setMaybe(self, grid_x, grid_y):
-		if self.mine_field_display[grid_x][grid_y] == NOTCLICK:
+		if self.mine_field_display[grid_x][grid_y] == NOT_CLICK:
 			self.mine_field_display[grid_x][grid_y] = MAYBE
 			self.fillGrid(grid_x, grid_y, COLOR_DEFAULT, textColor = COLOR_RED, text = '？')
 			return True
 		elif self.mine_field_display[grid_x][grid_y] == MAYBE:
-			self.mine_field_display[grid_x][grid_y] = NOTCLICK
+			self.mine_field_display[grid_x][grid_y] = NOT_CLICK
 			self.fillGrid(grid_x, grid_y, COLOR_DEFAULT)
 			return True
 		return False
@@ -188,8 +219,8 @@ class MineSweeper:
 
 	#获取地雷图片
 	def getMineImage(self):
-		for corr in self.mine_corr:
-			self.fillGrid(corr[0], corr[1], COLOR_RED)
+		for coor in self.mine_coor:
+			self.fillGrid(coor[0], coor[1], COLOR_RED)
 		return self.im
 
 	#画格子，初始化整个雷区显示
@@ -238,7 +269,7 @@ class MineSweeper:
 		self.draw.text( ( 9 + grid_x * self.grid_size + OFFSET_X, 1 + grid_y * self.grid_size + OFFSET_Y), text, font = self.textFont, fill = textColor)
 
 #管理器
-class manager:
+class Manager:
 	def __init__(self):
 		self.playing = {}
 
@@ -251,7 +282,7 @@ class manager:
 	def get_game(self, gid):
 		return self.playing[gid] if gid in self.playing else None
 
-mgr = manager()
+mgr = Manager()
 DURATION = 1
 WAIT_TIME = 3
 
@@ -280,11 +311,12 @@ DEGREE_HARD_MINE_NUM = 30
 DEGREE_HARD_TIME = 10
 
 
-@sv.on_rex(r'^扫雷( |)(?:(((\d+)(X|x|×)(\d+))|(简单|普通|困难)))? *( |)? *(\d+)? *(\d+)?')
+@sv.on_rex(r'^扫雷( |)(?:(((\d+)(X|x|×|\*)(\d+))|(简单|普通|困难)))? *( |)? *(\d+)? *(\d+)?')
 async def mine_sweeper(bot, ev):
 
 	if mgr.is_playing(ev.group_id):
-		await bot.finish(ev, "游戏仍在进行中…")
+		ms:MineSweeper = mgr.get_game(ev.group_id)
+		await bot.finish(ev, f"游戏仍在进行中…\n总地雷数量：{ms.mine_num}，已标记地雷数量{ms.flag_num}")
 
 	match = ev['match']
 	if not match:
@@ -366,8 +398,8 @@ async def mine_sweeper(bot, ev):
 						user_card = uid2card(uid, user_card_dict)
 						score_counter = ScoreCounter()
 						daily_card_limiter.increase(guid)
-						dailynum = daily_card_limiter.get_num(guid)
-						gold_msg += (user_card + "(" + str(dailynum) + "/" + str(MAX_GUESS_NUM) + ") ")
+						daily_num = daily_card_limiter.get_num(guid)
+						gold_msg += (user_card + "(" + str(daily_num) + "/" + str(MAX_GUESS_NUM) + ") ")
 						score_counter._add_score(ev.group_id, uid, gold)
 			msg.append(f"恭喜，你已成功找出所有地雷！\n最终结果：\n{image.cqcode}")
 			if gold_msg != "":
@@ -386,7 +418,7 @@ async def click_grid(bot, ev: CQEvent):
 	uid = ev.user_id
 	grid_x = int(match.group(1))
 	grid_y = int(match.group(3))
-	ms = mgr.get_game(gid)
+	ms:MineSweeper = mgr.get_game(gid)
 	if not ms  or ms.end_flag != NORMAL:
 		return
 	if not ms.checkCoor(grid_x, grid_y):
@@ -409,7 +441,7 @@ async def click_flag(bot, ev: CQEvent):
 	if not match :
 		return
 	gid = ev.group_id
-	ms = mgr.get_game(gid)
+	ms:MineSweeper = mgr.get_game(gid)
 	if not ms  or ms.end_flag != NORMAL:
 		return
 	
@@ -437,7 +469,7 @@ async def click_flag(bot, ev: CQEvent):
 async def game_finish(bot, ev: CQEvent):
 	if not priv.check_priv(ev, priv.ADMIN):
 		await bot.finish(ev, '只有群管理才能强制结束', at_sender=True)
-	ms = mgr.get_game(ev.group_id)
+	ms:MineSweeper = mgr.get_game(ev.group_id)
 	if not ms  or ms.end_flag:
 		return
 	ms.end_flag = LOSE
@@ -447,12 +479,12 @@ async def game_finish(bot, ev: CQEvent):
 async def check_mine(bot, ev: CQEvent):
 	if not priv.check_priv(ev, priv.SUPERUSER):
 		await bot.finish(ev, '只有机器人管理者才能查看雷区', at_sender=True)
-	ms = mgr.get_game(ev.group_id)
+	ms:MineSweeper = mgr.get_game(ev.group_id)
 	if not ms  or ms.end_flag:
 		return
 	msg = ""
-	for corr in ms.mine_corr :
-		msg += ("(" + str(corr[0] + 1) + "," + str(corr[1] + 1) + ")")
+	for coor in ms.mine_coor :
+		msg += ("(" + str(coor[0] + 1) + "," + str(coor[1] + 1) + ")")
 	await bot.send(ev, msg)
 
 @sv.on_fullmatch(("扫雷帮助"))
